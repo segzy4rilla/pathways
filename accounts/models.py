@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.core.mail import send_mail
@@ -61,3 +62,27 @@ class User(AbstractBaseUser, PermissionsMixin):
         Send an email to this user
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class Client(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
+    clinic_name = models.CharField(max_length=200)
+
+    class Meta:
+        verbose_name = 'client'
+        verbose_name_plural = 'clients'
+
+    def __str__(self):
+        return self.clinic_name
+
+
+class Staff(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='staffs')
+
+    class Meta:
+        verbose_name = 'staff'
+        verbose_name_plural = 'staffs'
+
+    def __str__(self):
+        return self.user.get_fullname
